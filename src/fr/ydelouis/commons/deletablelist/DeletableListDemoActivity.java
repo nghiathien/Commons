@@ -12,9 +12,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import fr.ydelouis.commons.R;
-import fr.ydelouis.commons.deletablelist.DeletableListView.OnItemDeleteListener;
+import fr.ydelouis.commons.deletablelist.DeletableListView.OnItemDeletedListener;
 
-public class DeletableListDemoActivity extends Activity implements OnItemDeleteListener
+public class DeletableListDemoActivity extends Activity implements OnItemDeletedListener
 {
 	private static final int[] IMAGES = new int[] {android.R.drawable.ic_menu_add,
 		android.R.drawable.ic_menu_agenda, android.R.drawable.ic_menu_call, android.R.drawable.ic_menu_camera,
@@ -32,7 +32,7 @@ public class DeletableListDemoActivity extends Activity implements OnItemDeleteL
         list = (DeletableListView) findViewById(R.id.list);
         list.setTagId(R.id.list);
         list.setAdapter(new CustomAdapter(this, items));
-        list.setOnItemDeleteListener(this);
+        list.setOnItemDeletedListener(this);
     }
 
     private void initList() {
