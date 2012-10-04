@@ -3,6 +3,7 @@ package fr.ydelouis.commons.deletablelist;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.os.CountDownTimer;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
@@ -14,11 +15,14 @@ import android.widget.ListView;
 
 public class DeletableListView extends ListView
 {
+	private static final int NO_ITEM_DRAGGED = -1;
 	private int tagId = -1;
-	private int draggedItemPosition = -1;
+	private int draggedItemPosition = NO_ITEM_DRAGGED;
 	private float draggedViewOffset = 0;
 	private float lastMotionEventX;
-	private OnItemDeleteListener onItemDeleteListener;
+	private float lastMotionEventY;
+	private Drawable selector;
+	private OnItemDeletedListener onItemDeletedListener;
 	
 	public DeletableListView(Context context, AttributeSet attrs) {
 		this(context, attrs, 0);
@@ -26,6 +30,9 @@ public class DeletableListView extends ListView
 	
 	public DeletableListView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
+		selector = getSelector();
+		if(getSelector() == null)
+			selector = getResources().getDrawable(android.R.drawable.list_selector_background);
 	}
 	
 	public void setTagId(int tagId) {
@@ -36,14 +43,14 @@ public class DeletableListView extends ListView
 	public void setAdapter(ListAdapter adapter) {
 		if(tagId == -1)
 			throw new RuntimeException("The tag id must be set before the adapter");
-		super.setAdapter(new SwipeToDeleteAdapter(adapter));
+		super.setAdapter(new DeletableListAdapter(adapter));
 	}
 	
 	@Override
 	public ListAdapter getAdapter() {
 		if(super.getAdapter() == null)
 			return null;
-		return ((SwipeToDeleteAdapter) super.getAdapter()).getAdapter();
+		return ((DeletableListAdapter) super.getAdapter()).getAdapter();
 	}
 	
 	@Override
@@ -71,11 +78,15 @@ public class DeletableListView extends ListView
 			public void onTick(long millisUntilFinished) {
 				if(draggedViewOffset > 0) {
 					draggedViewOffset -= getWidth()/(300/50);
-					draggedViewOffset = Math.max(0, draggedViewOffset);
+					if(draggedViewOffset < 0) {
+						onFinish();
+					}
 				}
 				if(draggedViewOffset < 0) {
 					draggedViewOffset += getWidth()/(300/50);
-					draggedViewOffset = Math.min(0, draggedViewOffset);
+					if(draggedViewOffset > 0) {
+						onFinish();
+					}
 				}
 				notifyDataSetChanged();
 			}
@@ -103,8 +114,8 @@ public class DeletableListView extends ListView
 			
 			@Override
 			public void onFinish() {
-				if(onItemDeleteListener != null) 
-					onItemDeleteListener.onItemDeleted(DeletableListView.this, draggedItemPosition);
+				if(onItemDeletedListener != null) 
+					onItemDeletedListener.onItemDeleted(DeletableListView.this, draggedItemPosition);
 				draggedViewOffset = 0;
 				draggedItemPosition = -1;
 				notifyDataSetChanged();
@@ -116,46 +127,70 @@ public class DeletableListView extends ListView
 	public boolean onTouchEvent(MotionEvent event) {
 		switch (event.getAction()) {
 			case MotionEvent.ACTION_DOWN:
-				draggedItemPosition = pointToPosition((int) event.getX(), (int) event.getY());
-				draggedViewOffset = 0;
-				lastMotionEventX = event.getX();
-				notifyDataSetChanged();
+				if(selector != null)
+					setSelector(selector);
+				startDragging(event);
 				break;
 			case MotionEvent.ACTION_MOVE:
-				draggedViewOffset += event.getX() - lastMotionEventX;
-				lastMotionEventX = event.getX();
-				notifyDataSetChanged();
+				if(isDraggingLeftOrRight(event)) {
+					setSelector(android.R.color.transparent);
+					draggedViewOffset += event.getX() - lastMotionEventX;
+					notifyDataSetChanged();
+					saveLastMotionEvent(event);
+					return true;
+				} else if(isDraggingTopOrBottom(event)){
+					startBackAnimation();
+				}
 				break;
 			case MotionEvent.ACTION_UP:
 				draggedViewOffset += event.getX() - lastMotionEventX;
-				lastMotionEventX = event.getX();
+				saveLastMotionEvent(event);
 				if(isToBeDeleted())
 					startDeletionAnimation();
 				else
 					startBackAnimation();
-				return draggedViewOffset > 20;
+				if(Math.abs(draggedViewOffset) > 20)
+					return true;
 		}
-		
 		return super.onTouchEvent(event);
 	}
 	
+	private void startDragging(MotionEvent event) {
+		draggedItemPosition = pointToPosition((int) event.getX(), (int) event.getY());
+		draggedViewOffset = 0;
+		saveLastMotionEvent(event);
+	}
+	
+	private boolean isDraggingLeftOrRight(MotionEvent event) {
+		return Math.abs(event.getX() - lastMotionEventX) > Math.abs(event.getY() - lastMotionEventY);
+	}
+	
+	private boolean isDraggingTopOrBottom(MotionEvent event) {
+		return Math.abs(event.getY() - lastMotionEventY) > 20;
+	}
+	
+	private void saveLastMotionEvent(MotionEvent event) {
+		lastMotionEventX = event.getX();
+		lastMotionEventY = event.getY();
+	}
+	
 	public void notifyDataSetChanged() {
-		((SwipeToDeleteAdapter) super.getAdapter()).notifyDataSetChanged();
+		((DeletableListAdapter) super.getAdapter()).notifyDataSetChanged();
 	}
 	
-	public void setOnItemDeleteListener(OnItemDeleteListener onItemDeleteListener) {
-		this.onItemDeleteListener = onItemDeleteListener;
+	public void setOnItemDeletedListener(OnItemDeletedListener onItemDeletedListener) {
+		this.onItemDeletedListener = onItemDeletedListener;
 	}
 	
-	public interface OnItemDeleteListener {
+	public interface OnItemDeletedListener {
 		public void onItemDeleted(DeletableListView listView, int position);
 	}
 	
-	private class SwipeToDeleteAdapter extends BaseAdapter
+	private class DeletableListAdapter extends BaseAdapter
 	{
 		private ListAdapter adapter;
 		
-		public SwipeToDeleteAdapter(ListAdapter adapter) {
+		public DeletableListAdapter(ListAdapter adapter) {
 			this.adapter = adapter;
 		}
 		
