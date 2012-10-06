@@ -30,7 +30,6 @@ public class DeletableListDemoActivity extends Activity implements OnItemDeleted
         setContentView(R.layout.deletablelist_demo);
         initList();
         list = (DeletableListView) findViewById(R.id.list);
-        list.setTagId(R.id.list);
         list.setAdapter(new CustomAdapter(this, items));
         list.setOnItemDeletedListener(this);
     }

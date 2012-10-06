@@ -16,7 +16,6 @@ import android.widget.ListView;
 public class DeletableListView extends ListView
 {
 	private static final int NO_ITEM_DRAGGED = -1;
-	private int tagId = -1;
 	private int draggedItemPosition = NO_ITEM_DRAGGED;
 	private float draggedViewOffset = 0;
 	private float lastMotionEventX;
@@ -30,19 +29,17 @@ public class DeletableListView extends ListView
 	
 	public DeletableListView(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
+		
+		if(getId() == NO_ID)
+			throw new RuntimeException("An id must be set in the XML layout for this DeletableListView");
+		
 		selector = getSelector();
 		if(getSelector() == null)
 			selector = getResources().getDrawable(android.R.drawable.list_selector_background);
 	}
 	
-	public void setTagId(int tagId) {
-		this.tagId = tagId;
-	}
-	
 	@Override
 	public void setAdapter(ListAdapter adapter) {
-		if(tagId == -1)
-			throw new RuntimeException("The tag id must be set before the adapter");
 		super.setAdapter(new DeletableListAdapter(adapter));
 	}
 	
@@ -55,7 +52,7 @@ public class DeletableListView extends ListView
 	
 	@Override
 	protected boolean drawChild(Canvas canvas, View child, long drawingTime) {
-		if(draggedItemPosition != (Integer) child.getTag(tagId))
+		if(draggedItemPosition != (Integer) child.getTag(getId()))
 			return super.drawChild(canvas, child, drawingTime);
 		
 		float alpha = 1 - Math.abs(draggedViewOffset / getWidth());
@@ -201,7 +198,7 @@ public class DeletableListView extends ListView
 		@Override
 		public View getView(int position, View view, ViewGroup parent) {
 			view = adapter.getView(position, view, parent);
-			view.setTag(tagId, position);
+			view.setTag(DeletableListView.this.getId(), position);
 			return view;
 		}
 		
