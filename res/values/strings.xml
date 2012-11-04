@@ -1,5 +1,12 @@
 <resources>
 
     <string name="app_name">yCommons</string>
-
+    
+    <string name="deletableList">Deletable list</string>
+    <string name="deletableListDemo">Deletable list demo</string>
+    
+    <string name="autoFitTextView">AutoFitTextView</string>
+	<string name="autoFitTextViewDemo">AutoFitTextView demo</string>
+	<string name="aftvTextDemo">Hello world !</string>
+    
 </resources>

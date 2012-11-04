@@ -1,0 +1,14 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:aftv="http://schemas.android.com/apk/res/fr.ydelouis.commons"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+    
+    <fr.ydelouis.commons.aftv.AutoFitTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/darker_gray"
+        android:text="@string/aftvTextDemo" />
+    
+
+</LinearLayout>
