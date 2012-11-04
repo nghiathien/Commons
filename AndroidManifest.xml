@@ -25,7 +25,8 @@
         
         <activity 
             android:name=".aftv.AutoFitTextViewDemoActivity"
-            android:label="@string/autoFitTextViewDemo" />
+            android:label="@string/autoFitTextViewDemo"
+            android:screenOrientation="sensorPortrait" />
         
     </application>
 

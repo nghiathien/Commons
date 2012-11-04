@@ -44,8 +44,8 @@ public class AutoFitTextView extends TextView
 		if(mode == Mode.None)
 			return;
 		
-		final int targetWidth = getWidth() - getCompoundPaddingLeft() - getCompoundPaddingRight();
-		final int targetHeight = getHeight() - getCompoundPaddingBottom() - getCompoundPaddingTop();
+		final int targetWidth = getWidth();
+		final int targetHeight = getHeight();
 		
 		inComputation = true;
 		float higherSize = maxTextSize;
