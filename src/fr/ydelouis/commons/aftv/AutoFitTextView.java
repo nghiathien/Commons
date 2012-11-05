@@ -59,13 +59,13 @@ public class AutoFitTextView extends TextView
 				lowerSize = textSize;
 			}
 		}
-		this.setTextSize(lowerSize);
+		setTextSize(TypedValue.COMPLEX_UNIT_PX, lowerSize);
 		measure(widthMeasureSpec, heightMeasureSpec);
 		inComputation = false;
 	}
 	
 	private boolean isTooBig(float textSize, int targetWidth, int targetHeight) {
-		setTextSize(textSize);
+		setTextSize(TypedValue.COMPLEX_UNIT_PX, textSize);
 		measure(0, 0);
 		if(mode == Mode.Both)
 			return getMeasuredWidth() >= targetWidth || getMeasuredHeight() >= targetHeight;
